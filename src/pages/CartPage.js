@@ -4,6 +4,7 @@ import { CartContext } from '../context/CartContext';
 const CartPage = () => {
   const { cart, updateQuantity, removeItem } = useContext(CartContext);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [discount, setDiscount] = useState(0);
 
   useEffect(() => {
     const calculateTotalPrice = () => {
@@ -11,8 +12,14 @@ const CartPage = () => {
       setTotalPrice(total);
     };
 
+    const calculateDiscount = () => {
+      const discount = cart.length >= 3 ? totalPrice * 0.1 : 0;
+      setDiscount(discount);
+    };
+
     calculateTotalPrice();
-  }, [cart]);
+    calculateDiscount();
+  }, [cart, totalPrice]);
 
   const handleQuantityChange = (id, quantity) => {
     updateQuantity(id, quantity);
@@ -20,6 +27,22 @@ const CartPage = () => {
 
   const handleRemoveItem = (id) => {
     removeItem(id);
+  };
+
+  const handleRemoveAll = () => {
+    cart.forEach((item) => removeItem(item.id));
+  };
+
+  const handleDragStart = (e, index) => {
+    e.dataTransfer.setData('index', index);
+  };
+
+  const handleDrop = (e, index) => {
+    const draggedIndex = e.dataTransfer.getData('index');
+    const updatedCart = [...cart];
+    const [draggedItem] = updatedCart.splice(draggedIndex, 1);
+    updatedCart.splice(index, 0, draggedItem);
+    updateQuantity(updatedCart);
   };
 
   return (
@@ -40,8 +63,14 @@ const CartPage = () => {
               </tr>
             </thead>
             <tbody>
-              {cart.map((item) => (
-                <tr key={item.id}>
+              {cart.map((item, index) => (
+                <tr
+                  key={item.id}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDrop={(e) => handleDrop(e, index)}
+                  onDragOver={(e) => e.preventDefault()}
+                >
                   <td className="border px-4 py-2">{item.name}</td>
                   <td className="border px-4 py-2">${item.price}</td>
                   <td className="border px-4 py-2">
@@ -66,7 +95,14 @@ const CartPage = () => {
             </tbody>
           </table>
           <div className="p-4">
-            <h2 className="text-xl font-semibold">Total: ${totalPrice}</h2>
+            <h2 className="text-xl font-semibold">Total: ${totalPrice - discount}</h2>
+            {discount > 0 && <p className="text-green-500">Discount: -${discount}</p>}
+            <button
+              onClick={handleRemoveAll}
+              className="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+            >
+              Remove All
+            </button>
           </div>
         </div>
       )}

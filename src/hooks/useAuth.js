@@ -16,11 +16,20 @@ const useAuth = () => {
     setIsAuthenticated(false);
   };
 
+  const signup = (name, email, password) => {
+    // Mock signup function
+    const newUser = { name, email };
+    setUser(newUser);
+    setIsAuthenticated(true);
+    localStorage.setItem('user', JSON.stringify(newUser));
+  };
+
   return {
     user,
     isAuthenticated,
     login,
     logout,
+    signup,
   };
 };
 

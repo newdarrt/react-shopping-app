@@ -8,9 +8,27 @@ const CartProvider = ({ children }) => {
     return savedCart ? JSON.parse(savedCart) : [];
   });
 
+  const [wishlist, setWishlist] = useState(() => {
+    const savedWishlist = localStorage.getItem('wishlist');
+    return savedWishlist ? JSON.parse(savedWishlist) : [];
+  });
+
+  const [orderHistory, setOrderHistory] = useState(() => {
+    const savedOrderHistory = localStorage.getItem('orderHistory');
+    return savedOrderHistory ? JSON.parse(savedOrderHistory) : [];
+  });
+
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
+
+  useEffect(() => {
+    localStorage.setItem('wishlist', JSON.stringify(wishlist));
+  }, [wishlist]);
+
+  useEffect(() => {
+    localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
+  }, [orderHistory]);
 
   const addItem = (product) => {
     setCart((prevCart) => {
@@ -37,8 +55,39 @@ const CartProvider = ({ children }) => {
     );
   };
 
+  const addToWishlist = (product) => {
+    setWishlist((prevWishlist) => {
+      const existingItem = prevWishlist.find((item) => item.id === product.id);
+      if (existingItem) {
+        return prevWishlist;
+      } else {
+        return [...prevWishlist, product];
+      }
+    });
+  };
+
+  const removeFromWishlist = (id) => {
+    setWishlist((prevWishlist) => prevWishlist.filter((item) => item.id !== id));
+  };
+
+  const addOrder = (order) => {
+    setOrderHistory((prevOrderHistory) => [...prevOrderHistory, order]);
+  };
+
   return (
-    <CartContext.Provider value={{ cart, addItem, removeItem, updateQuantity }}>
+    <CartContext.Provider
+      value={{
+        cart,
+        addItem,
+        removeItem,
+        updateQuantity,
+        wishlist,
+        addToWishlist,
+        removeFromWishlist,
+        orderHistory,
+        addOrder,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
